@@ -1,0 +1,462 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Google Revenue Prediction</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- NAVIGATION BAR -->
+<nav class="navbar">
+    <a href="#home" class="brand">
+        <span class="brand-icon">G</span>
+        <span>Revenue<span class="brand-highlight">AI</span></span>
+    </a>
+
+    <div class="nav-links">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#prediction" class="nav-link">Prediction</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#about" class="nav-link">About</a>
+    </div>
+
+    <a href="#prediction" class="nav-button">Get Prediction ↗</a>
+</nav>
+
+
+<!-- HOME SECTION -->
+<section id="home" class="hero">
+    <div class="hero-content">
+        <span class="eyebrow">
+            MACHINE LEARNING · BUSINESS ANALYTICS
+        </span>
+
+        <h1>
+            Predict Revenue.<br>
+            <span>Understand Growth.</span>
+        </h1>
+
+        <p class="hero-description">
+            Estimate Google's total revenue using business,
+            financial and digital-performance indicators
+            with a machine-learning-powered application.
+        </p>
+
+        <div class="hero-actions">
+            <a href="#prediction" class="primary-button">
+                Start Prediction →
+            </a>
+            <a href="#about" class="secondary-button">
+                Explore Project
+            </a>
+        </div>
+
+        <div class="hero-note">
+            <span class="online-dot"></span>
+            Six regression models · USD and INR results
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="visual-top">
+            <span class="visual-dot"></span>
+            <span class="visual-dot"></span>
+            <span class="visual-dot"></span>
+            <span class="visual-title">Revenue overview</span>
+        </div>
+
+        <div class="visual-content">
+            <span class="visual-label">PREDICTION SYSTEM</span>
+            <div class="visual-amount">USD <span>↔</span> INR</div>
+            <p>One prediction, two currencies</p>
+
+            <div class="visual-bars">
+                <div style="height: 35%"></div>
+                <div style="height: 48%"></div>
+                <div style="height: 40%"></div>
+                <div style="height: 65%"></div>
+                <div style="height: 55%"></div>
+                <div style="height: 78%"></div>
+                <div style="height: 92%"></div>
+            </div>
+
+            <div class="visual-footer">
+                <span>ML-powered estimation</span>
+                <span class="visual-pill">6 Models</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- STATISTICS -->
+<section class="stats-strip">
+    <div class="stat">
+        <strong>8,000</strong>
+        <span>Dataset Records*</span>
+    </div>
+
+    <div class="stat">
+        <strong>11</strong>
+        <span>Input Features</span>
+    </div>
+
+    <div class="stat">
+        <strong>6</strong>
+        <span>Regression Models</span>
+    </div>
+
+    <div class="stat">
+        <strong>2</strong>
+        <span>Currency Displays</span>
+    </div>
+
+    <div class="stat">
+        <strong>{{ "%.4f"|format(best_score) }}</strong>
+        <span>Best Score (R²)</span>
+    </div>
+
+    <div class="stat best-model-stat">
+        <strong>{{ best_model }}</strong>
+        <span>Best Model Name</span>
+    </div>
+</section>
+
+
+<!-- PREDICTION SECTION -->
+<section id="prediction" class="section prediction-section">
+    <div class="section-heading">
+        <span class="eyebrow">REVENUE ESTIMATOR</span>
+        <h2>Predict Google's Revenue</h2>
+        <p>
+            Enter all 11 indicators. The selected model will
+            estimate total revenue and convert the result to INR.
+        </p>
+    </div>
+
+    <div class="prediction-layout">
+
+        <!-- INPUT FORM -->
+        <div class="panel input-panel">
+            <div class="panel-heading">
+                <div>
+                    <span class="step-label">STEP 01</span>
+                    <h3>Business Indicators</h3>
+                </div>
+                <span class="required-label">All fields required</span>
+            </div>
+
+            <form action="{{ url_for('predict') }}"
+                  method="POST"
+                  id="prediction-form">
+
+                <div class="form-grid">
+                    {% for feature in features %}
+                    <div class="form-group">
+                        <label for="{{ feature.name }}">
+                            {{ feature.label }}
+                        </label>
+
+                        <div class="input-wrapper">
+                            <input
+                                type="number"
+                                id="{{ feature.name }}"
+                                name="{{ feature.name }}"
+                                step="{{ feature.step }}"
+                                min="0"
+                                value="{{ form_values.get(feature.name, '') }}"
+                                placeholder="Enter {{ feature.label|lower }}"
+                                required
+                            >
+                            <span class="input-unit">
+                                {{ feature.unit }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="predict-button">
+                    <span>Predict Revenue</span>
+                    <span class="button-arrow">→</span>
+                </button>
+
+                <p class="form-note">
+                    The entered values are processed by the
+                    trained model on the Flask backend.
+                </p>
+            </form>
+        </div>
+
+
+        <!-- PREDICTION RESULTS -->
+        <div class="result-column">
+
+            {% if prediction is not none %}
+
+            <div class="result-banner">
+                <div class="result-check">✓</div>
+                <div>
+                    <strong>Prediction completed</strong>
+                    <span>Estimated revenue from your inputs</span>
+                </div>
+            </div>
+
+            <!-- USD RESULT -->
+            <div class="currency-card usd-card">
+                <div class="currency-heading">
+                    <span class="currency-icon">$</span>
+                    <div>
+                        <span class="currency-name">US DOLLAR</span>
+                        <span class="currency-unit">Million USD</span>
+                    </div>
+                    <span class="currency-code">USD</span>
+                </div>
+
+                <div class="currency-value">
+                    ${{ "{:,.2f}".format(prediction) }}
+                </div>
+
+                <p class="currency-description">
+                    Predicted total revenue in US dollars.
+                </p>
+            </div>
+
+            <div class="conversion-arrow">↓ Currency conversion ↓</div>
+
+            <!-- INR RESULT -->
+            <div class="currency-card inr-card">
+                <div class="currency-heading">
+                    <span class="currency-icon">₹</span>
+                    <div>
+                        <span class="currency-name">INDIAN RUPEE</span>
+                        <span class="currency-unit">Million INR</span>
+                    </div>
+                    <span class="currency-code">INR</span>
+                </div>
+
+                <div class="currency-value">
+                    ₹{{ "{:,.2f}".format(prediction_inr_million) }}
+                </div>
+
+                <div class="crore-value">
+                    ₹{{ "{:,.2f}".format(prediction_inr_crore) }}
+                    crore
+                </div>
+
+                <p class="currency-description">
+                    Converted using ₹{{ "%.2f"|format(exchange_rate) }}
+                    per USD.
+                </p>
+            </div>
+
+            <!-- SELECTED MODEL -->
+            <div class="model-used">
+                <span>SELECTED MODEL</span>
+                <strong>{{ best_model }}</strong>
+            </div>
+
+            {% else %}
+
+            <!-- EMPTY RESULTS -->
+            <div class="empty-result">
+                <div class="empty-result-icon">₹</div>
+                <span class="eyebrow">YOUR RESULTS</span>
+                <h3>Your prediction appears here</h3>
+                <p>
+                    Complete the input form and select
+                    Predict Revenue to see both currencies.
+                </p>
+
+                <div class="empty-currency-row">
+                    <div>
+                        <span>USD</span>
+                        <strong>$ —</strong>
+                    </div>
+                    <div>
+                        <span>INR</span>
+                        <strong>₹ —</strong>
+                    </div>
+                </div>
+            </div>
+
+            {% endif %}
+
+            <!-- ERROR MESSAGE -->
+            {% if error %}
+            <div class="error-message" role="alert">
+                <strong>Unable to predict</strong>
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <!-- EXCHANGE-RATE NOTE
+            <div class="exchange-note">
+                <strong>Exchange-rate note</strong>
+                <p>
+                    The INR amount is calculated using the
+                    configured exchange rate in app.py.
+                    It is not a live currency quote.
+                </p>
+            </div>
+            -->
+
+        </div>
+    </div>
+</section>
+
+
+<!-- FEATURES SECTION -->
+<section id="features" class="section features-section">
+    <div class="section-heading">
+        <span class="eyebrow">PROJECT CAPABILITIES</span>
+        <h2>Features of the System</h2>
+        <p>
+            An end-to-end machine learning workflow presented
+            through a simple web interface.
+        </p>
+    </div>
+
+    <div class="features-grid">
+
+        <!-- FEATURE 1 -->
+        <article class="feature-card">
+            <div class="feature-icon icon-blue">01</div>
+            <h3>Data Analysis</h3>
+            <p>
+                The project dataset can be explored through
+                descriptive statistics, distributions,
+                correlations and outlier analysis.
+            </p>
+        </article>
+
+        <!-- FEATURE 2 -->
+        <article class="feature-card">
+            <div class="feature-icon icon-purple">02</div>
+            <h3>Six ML Models</h3>
+            <p>
+                Linear Regression, Decision Tree Regression,
+                Random Forest Regression, K-Nearest Neighbors (KNN)
+                Regression, AdaBoost Regression and Gradient Boosting
+                Regression are compared.
+            </p>
+        </article>
+
+        <!-- FEATURE 3 -->
+        <article class="feature-card">
+            <div class="feature-icon icon-green">03</div>
+            <h3>Model Evaluation</h3>
+            <p>
+                MAE, MSE, RMSE and R² are calculated using
+                a held-out test dataset.
+            </p>
+        </article>
+
+        <!-- FEATURE 4 -->
+        <article class="feature-card">
+            <div class="feature-icon icon-orange">04</div>
+            <h3>USD to INR</h3>
+            <p>
+                The predicted revenue is displayed in USD and
+                converted to Indian rupees on the same page.
+            </p>
+        </article>
+
+        <!-- FEATURE 5 -->
+        <article class="feature-card">
+            <div class="feature-icon icon-blue">05</div>
+            <h3>Automatic Model Selection</h3>
+            <p>
+                The application selects the model with the
+                highest test-set R² score.
+            </p>
+        </article>
+
+        <!-- FEATURE 6 -->
+        <article class="feature-card">
+            <div class="feature-icon icon-purple">06</div>
+            <h3>No Pickle Required</h3>
+            <p>
+                Models are trained from the CSV when the
+                application starts. No saved model file is needed.
+            </p>
+        </article>
+
+    </div>
+</section>
+
+
+<!-- ABOUT SECTION -->
+<section id="about" class="section about-section">
+    <div class="about-content">
+        <span class="eyebrow">ABOUT THE PROJECT</span>
+        <h2>Making Business Data Useful</h2>
+
+        <p>
+            Google Revenue Prediction is a machine learning
+            project that estimates total revenue using business,
+            financial and digital-performance indicators.
+            It demonstrates data preprocessing, exploratory
+            data analysis, regression modelling and evaluation.
+        </p>
+
+        <p>
+            A Flask web application allows users to submit
+            inputs and view the model's estimated revenue
+            without running Python commands for each prediction.
+        </p>
+
+        <!-- IMPORTANT LIMITATION
+        <div class="about-disclaimer">
+            <strong>Important limitation</strong>
+            <p>
+                This is an educational prediction system.
+                Its output depends on the dataset and the inputs.
+                It is not Google's official financial forecast.
+                For genuine future forecasting, only information
+                available before the forecast period should be used.
+            </p>
+        </div>
+        -->
+    </div>
+
+    <div class="about-side">
+        <div class="about-stat">
+            <span>Problem Type</span>
+            <strong>Regression</strong>
+        </div>
+
+        <div class="about-stat">
+            <span>Backend</span>
+            <strong>Python + Flask</strong>
+        </div>
+
+        <div class="about-stat">
+            <span>Frontend</span>
+            <strong>HTML + CSS</strong>
+        </div>
+
+        <div class="about-stat">
+            <span>Model Storage</span>
+            <strong>No Pickle</strong>
+        </div>
+    </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="footer">
+    <a href="#home" class="footer-brand">RevenueAI</a>
+    <p>Google Revenue Prediction · Machine Learning Project</p>
+    <a href="#home" class="back-top">Back to top ↑</a>
+</footer>
+
+</body>
+</html>
